@@ -12,16 +12,15 @@ client = Rintel::Client.new(
 
 maxTimestampMs = nil
 3.times do
-  payload = {
+  options = {
     "maxLatE6" => 35660300,
     "maxLngE6" => 139704829,
     "minLatE6" => 35656734,
     "minLngE6" => 139697839,
-    "tab" => "all",
   }
-  payload["maxTimestampMs"] = maxTimestampMs - 1 if maxTimestampMs
+  options["maxTimestampMs"] = maxTimestampMs - 1 if maxTimestampMs
 
-  client.plexts(payload).each do |data|
+  client.plexts("all", options).each do |data|
     plext = data[2]["plext"]
     player  = plext["markup"].select{|e| e[0] == "PLAYER"}[0]
     portals = plext["markup"].select{|e| e[0] == "PORTAL"}

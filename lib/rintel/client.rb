@@ -20,6 +20,34 @@ module Rintel
       end
     end
 
+    # Returns COMM messages
+    def plexts(tab, options = {})
+      payload = {
+        'v' => v,
+        'tab' => tab,
+        'minLatE6' =>  -90000000,
+        'minLngE6' => -180000000,
+        'maxLatE6' =>   90000000,
+        'maxLngE6' =>  180000000,
+        'maxTimestampMs' => -1,
+        'minTimestampMs' => -1,
+      }.merge!(options)
+      json = payload.to_json
+
+      begin
+        result = @agent.post 'https://www.ingress.com/r/getPlexts', json,
+                  'Content-Type' => 'application/json; charset=UTF-8',
+                  'x-csrftoken' => csrftoken
+        data = JSON.parse(result.body)
+        return data['success']
+      rescue JSON::ParserError, Mechanize::ResponseCodeError => e
+        @log.error('%s. login and retry...' % e.class)
+        login && retry
+      end
+    end
+
+    private
+
     def login
       @agent.cookie_jar.clear
 
@@ -38,30 +66,6 @@ module Rintel
         login
       end
       @agent.cookies.find{|c| c.name == 'csrftoken' }.value
-    end
-
-    def plexts(payload)
-      payload['v'] = v
-      payload['tab'] ||= 'all'
-      payload['minLatE6'] ||=  -90000000
-      payload['minLngE6'] ||= -180000000
-      payload['maxLatE6'] ||=   90000000
-      payload['maxLngE6'] ||=  180000000
-      payload['maxTimestampMs'] ||= -1
-      payload['minTimestampMs'] ||= -1
-      json = payload.to_json
-
-      begin
-        result = @agent.post 'https://www.ingress.com/r/getPlexts', json,
-                  'Content-Type' => 'application/json; charset=UTF-8',
-                  'x-csrftoken' => csrftoken
-        data = JSON.parse(result.body)
-        return data['success']
-      rescue JSON::ParserError, Mechanize::ResponseCodeError => e
-        p e
-        @log.error('%s. login and retry...' % e.class)
-        login && retry
-      end
     end
 
     def v
