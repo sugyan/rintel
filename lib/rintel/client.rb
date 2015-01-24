@@ -41,8 +41,10 @@ module Rintel
         data = JSON.parse(result.body)
         return data['success']
       rescue JSON::ParserError, Mechanize::ResponseCodeError => e
-        @log.error('%s. login and retry...' % e.class)
+        @log.error '%s. login and retry...' % e.class
         login && retry
+      rescue GoogleLoginError => e
+        abort 'login failed.'
       end
     end
 
@@ -65,7 +67,11 @@ module Rintel
       if @agent.cookie_jar.empty?
         login
       end
-      @agent.cookies.find{|c| c.name == 'csrftoken' }.value
+      if token_cookie = @agent.cookies.find{|c| c.name == 'csrftoken' }
+        return token_cookie.value
+      else
+        raise GoogleLoginError
+      end
     end
 
     def v
