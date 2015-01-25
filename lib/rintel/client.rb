@@ -31,11 +31,11 @@ module Rintel
         'maxLngE6' =>  180000000,
         'maxTimestampMs' => -1,
         'minTimestampMs' => -1,
-      }.merge!(options)
-      json = payload.to_json
+      }.merge(options).to_json
 
       begin
-        result = @agent.post 'https://www.ingress.com/r/getPlexts', json,
+        login if csrftoken.nil?
+        result = @agent.post 'https://www.ingress.com/r/getPlexts', payload,
                   'Content-Type' => 'application/json; charset=UTF-8',
                   'x-csrftoken' => csrftoken
         data = JSON.parse(result.body)
@@ -60,18 +60,16 @@ module Rintel
         form.Passwd = @password
       end.click_button
 
-      @agent.cookie_jar.save(@@cookie_path)
-    end
-
-    def csrftoken
-      if @agent.cookie_jar.empty?
-        login
-      end
-      if token_cookie = @agent.cookies.find{|c| c.name == 'csrftoken' }
-        return token_cookie.value
+      if csrftoken
+        @agent.cookie_jar.save(@@cookie_path)
       else
         raise GoogleLoginError
       end
+    end
+
+    def csrftoken
+      token_cookie = @agent.cookies.find {|c| c.name == 'csrftoken' }
+      token_cookie && token_cookie.value
     end
 
     def v
