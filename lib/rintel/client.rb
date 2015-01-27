@@ -42,7 +42,7 @@ module Rintel
         return data['success']
       rescue JSON::ParserError, Mechanize::ResponseCodeError => e
         @log.error '%s. login and retry...' % e.class
-        login && retry
+        clear_cookie && retry
       rescue GoogleLoginError => e
         abort 'login failed.'
       end
@@ -50,8 +50,12 @@ module Rintel
 
     private
 
-    def login
+    def clear_cookie
       @agent.cookie_jar.clear
+    end
+
+    def login
+      clear_cookie
 
       page = @agent.get('https://www.ingress.com/intel')
       page = @agent.click page.link_with(:text => /Sign in/)
