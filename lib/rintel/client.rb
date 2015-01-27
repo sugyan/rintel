@@ -8,14 +8,14 @@ module Rintel
 
     @@cookie_path = Pathname.new(Dir.tmpdir) + 'rintel_cookie.yml'
 
-    def initialize(username, password)
+    def initialize(username, password, restore_cookie = false)
       @username = username
       @password = password
       @agent = Mechanize.new
       @agent.user_agent_alias = 'Windows Chrome'
       @log = Logger.new(STDERR)
 
-      if File.exists?(@@cookie_path)
+      if restore_cookie && File.exists?(@@cookie_path)
         @agent.cookie_jar.load(File.new(@@cookie_path))
       end
     end
@@ -35,11 +35,15 @@ module Rintel
 
       begin
         login if csrftoken.nil?
-        result = @agent.post 'https://www.ingress.com/r/getPlexts', payload,
+        res = @agent.post 'https://www.ingress.com/r/getPlexts', payload,
                   'Content-Type' => 'application/json; charset=UTF-8',
                   'x-csrftoken' => csrftoken
-        data = JSON.parse(result.body)
-        return data['success']
+        data = JSON.parse(res.body)
+        if result = data['success']
+          return result
+        else
+          raise PlextsResponseError
+        end
       rescue JSON::ParserError, Mechanize::ResponseCodeError => e
         @log.error '%s. login and retry...' % e.class
         clear_cookie && retry
