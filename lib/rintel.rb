@@ -7,4 +7,10 @@ module Rintel
 
   class PlextsResponseError < StandardError
   end
+
+  class EntitiesResponseError < StandardError
+  end
+
+  class PortalDetailsResponseError < StandardError
+  end
 end

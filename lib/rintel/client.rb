@@ -52,6 +52,116 @@ module Rintel
       end
     end
 
+    # result.map:
+    # {
+    #   TILE_KEY: {
+    #     'gameEntities': [
+    #       [
+    #         0: guid of portal
+    #         1: ?
+    #         2: [
+    #           0: "p"(portal) | "e"(link) | "r"(CF)
+    #           1: "R" | "E"
+    #           2: lat
+    #           3: lng
+    #           4: lv
+    #           5: %
+    #           6: ?
+    #           7: image URL
+    #           8: portal name
+    #           9: []
+    #         ],
+    #       ],
+    #       ...
+    #     ],
+    #     'deletedGameEntityGuids': [ guid guid ... ],
+    #   },
+    #   TILE_KEY: {
+    #     'error': 'TIMEOUT',
+    #   },
+    #   ...
+    # }
+    def entities(tile_keys = [])
+      payload = {
+        'v'        => v,
+        'tileKeys' => tile_keys,
+      }.to_json
+
+      begin
+        login if csrftoken.nil?
+        res = @agent.post 'https://www.ingress.com/r/getEntities', payload,
+                  'Content-Type' => 'application/json; charset=UTF-8',
+                  'x-csrftoken' => csrftoken
+        data = JSON.parse(res.body)
+        if result = data['result']['map']
+          return result
+        else
+          raise EntitiesResponseError
+        end
+      rescue JSON::ParserError, Mechanize::ResponseCodeError => e
+        @log.error '%s. login and retry...' % e.class
+        clear_cookie && retry
+      rescue GoogleLoginError => e
+        abort 'login failed.'
+      end
+    end
+
+    # result:
+    # [
+    #   0: "p"
+    #   1: "R" | "E"
+    #   2: lat
+    #   3: lng
+    #   4: lv
+    #   5: %
+    #   6: ?
+    #   7: image URL
+    #   8: portal name
+    #   9: [] (always blank?)
+    #   10: [ MOD MOD ... ]
+    #   11: [ RESONATOR RESONATOR RESONATOR ... ]
+    #   12: owner agent name
+    # ]
+    #
+    # MOD: null or Array
+    # [
+    #   0: agent name
+    #   1: mods name
+    #   2: grade ("COMMON", ...)
+    #   3: { params of mod } ("MITIGATION", "REMOVAL_STICKINESS", ...)
+    # ]
+    #
+    # RESONATORS: null or Array
+    # [
+    #   0: agent name
+    #   1: lv
+    #   2: energy
+    # ]
+    def portal_details(guid = '')
+      payload = {
+        'v'    => v,
+        'guid' => guid,
+      }.to_json
+
+      begin
+        login if csrftoken.nil?
+        res = @agent.post 'https://www.ingress.com/r/getPortalDetails', payload,
+                  'Content-Type' => 'application/json; charset=UTF-8',
+                  'x-csrftoken' => csrftoken
+        data = JSON.parse(res.body)
+        if result = data['result']
+          return result
+        else
+          raise PortalDetailsResponseError
+        end
+      rescue JSON::ParserError, Mechanize::ResponseCodeError => e
+        @log.error '%s. login and retry...' % e.class
+        clear_cookie && retry
+      rescue GoogleLoginError => e
+        abort 'login failed.'
+      end
+    end
+
     private
 
     def clear_cookie
