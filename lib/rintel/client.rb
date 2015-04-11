@@ -178,6 +178,15 @@ module Rintel
         form.Passwd = @password
       end.click_button
 
+      if page.uri.to_s =~ /SecondFactor/
+        print 'Input PIN => '
+        pin = STDIN.gets.chomp
+        page = page.form_with(:action => /SecondFactor/) do |form|
+          form.smsUserPin = pin
+          form.checkbox_with(name: 'PersistentCookie').check
+        end.click_button
+      end
+
       if csrftoken
         @agent.cookie_jar.save(@@cookie_path)
       else
