@@ -39,7 +39,7 @@ module Rintel
                   'Content-Type' => 'application/json; charset=UTF-8',
                   'x-csrftoken' => csrftoken
         data = JSON.parse(res.body)
-        if result = data['success']
+        if result = data['result']
           return result
         else
           raise PlextsResponseError
