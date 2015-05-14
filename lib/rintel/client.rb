@@ -118,9 +118,11 @@ module Rintel
     #   7: image URL
     #   8: portal name
     #   9: [] (always blank?)
-    #   10: [ MOD MOD ... ]
-    #   11: [ RESONATOR RESONATOR RESONATOR ... ]
-    #   12: owner agent name
+    #   10: ?
+    #   11: ?
+    #   12: [ MOD MOD ... ]
+    #   13: [ RESONATOR RESONATOR RESONATOR ... ]
+    #   14: owner agent name
     # ]
     #
     # MOD: null or Array
