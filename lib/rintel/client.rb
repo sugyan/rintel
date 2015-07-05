@@ -22,19 +22,19 @@ module Rintel
 
     # Returns COMM messages
     def plexts(tab, options = {})
-      payload = {
-        'v' => v,
-        'tab' => tab,
-        'minLatE6' =>  -90000000,
-        'minLngE6' => -180000000,
-        'maxLatE6' =>   90000000,
-        'maxLngE6' =>  180000000,
-        'maxTimestampMs' => -1,
-        'minTimestampMs' => -1,
-      }.merge(options).to_json
-
-      begin
+       begin
         login if csrftoken.nil?
+        payload = {
+            'v' => v,
+            'tab' => tab,
+            'minLatE6' =>  -90000000,
+            'minLngE6' => -180000000,
+            'maxLatE6' =>   90000000,
+            'maxLngE6' =>  180000000,
+            'maxTimestampMs' => -1,
+            'minTimestampMs' => -1,
+        }.merge(options).to_json
+
         res = @agent.post 'https://www.ingress.com/r/getPlexts', payload,
                   'Content-Type' => 'application/json; charset=UTF-8',
                   'x-csrftoken' => csrftoken
@@ -82,13 +82,12 @@ module Rintel
     #   ...
     # }
     def entities(tile_keys = [])
-      payload = {
-        'v'        => v,
-        'tileKeys' => tile_keys,
-      }.to_json
-
       begin
         login if csrftoken.nil?
+        payload = {
+            'v'        => v,
+            'tileKeys' => tile_keys,
+        }.to_json
         res = @agent.post 'https://www.ingress.com/r/getEntities', payload,
                   'Content-Type' => 'application/json; charset=UTF-8',
                   'x-csrftoken' => csrftoken
@@ -140,13 +139,12 @@ module Rintel
     #   2: energy
     # ]
     def portal_details(guid = '')
-      payload = {
-        'v'    => v,
-        'guid' => guid,
-      }.to_json
-
       begin
         login if csrftoken.nil?
+        payload = {
+            'v'    => v,
+            'guid' => guid,
+        }.to_json
         res = @agent.post 'https://www.ingress.com/r/getPortalDetails', payload,
                   'Content-Type' => 'application/json; charset=UTF-8',
                   'x-csrftoken' => csrftoken
@@ -203,8 +201,8 @@ module Rintel
 
     def v
       return @v if @v
-      script = @agent.get 'https://www.ingress.com/jsc/gen_dashboard.js'
-      @v = script.body.match(/v="([a-f0-9]{40})";/)[1]
+      script = @agent.get 'https://www.ingress.com/intel'
+      @v = script./('script').last.attributes['src'].value.match('/jsc/gen_dashboard_([a-f0-9]{40})\.js$')[1]
     end
   end
 end
