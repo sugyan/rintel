@@ -47,11 +47,12 @@ puts <<EOP
 name  : #{portal_info[8]}
 guid  : #{guid}
 belong: #{portal_info[1]}
-owner : #{portal_info[14]}
+owner : #{portal_info[16]}
+resos : #{portal_info[15]}
 level : #{portal_info[4]}
 mods  :
 EOP
-portal_info[12].each_with_index do |mod, i|
+portal_info[14].each_with_index do |mod, i|
   if mod.nil?
     puts "  #{i}"
   else

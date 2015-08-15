@@ -173,7 +173,8 @@ module Rintel
 
       page = @agent.get('https://www.ingress.com/intel')
       page = @agent.click page.link_with(:text => /Sign in/)
-      page = page.form_with(:action => /ServiceLoginAuth/) do |form|
+      page = page.form_with(:action => /AccountLoginInfo/) do |form|
+        form.action = 'https://accounts.google.com/ServiceLoginAuth'
         form.Email  = @username
         form.Passwd = @password
       end.click_button
